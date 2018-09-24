@@ -1,0 +1,34 @@
+* Introduction
+
+2018 basketball project
+
+Use player trajectories to predict player
+
+We use this [[https://docs.google.com/presentation/d/1UUQPWn69poKy3clSZHIpD6xedAG1rGOM1_9YFDfq0PU/edit#slide=id.g42b656bfa3_0_0][Google Slides]] to keep the notes
+
+* Code Structure
+
+We reuse the code genearted for 2017 basketball project. For information on
+that, refer to README_2017.org
+
+Instead of focusing on doubleteaming, we record the whole possession: where a
+possession is the time from the player getting the ball until ball movement
+stops.
+
+The data is contained in ../traj_data ordered by gamecode. To generate this
+data, we use ../code/pipeline4.py.
+
+** legacy
+
+Legacy code (eg. definition of possesion) is put into legacy folder
+
+** lib
+
+Contains useful code for current project
+
+* Design choices
+
+1. Should we normalize x, y location to the right?
+
+2. Should we only use data when people cross half the court?
+
