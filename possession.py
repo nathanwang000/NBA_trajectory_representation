@@ -69,7 +69,7 @@ class Possession(object):
         ax = plt.axes()
         plt.title(title)
         
-        from court import Court
+        from legacy.court import Court
         c = Court()
         court_tuple = c.plot(ax)
         region_tuple = c.plotRegion()
@@ -197,7 +197,7 @@ def loadPossession(game_file_path="cavs_games.txt", gamecodes=None):
                   # event2code["Defensive Rebound"], # imediately start a new pocession
                   event2code["Turnover"], # could follow dribble or possession
                   event2code["Foul"] # could follow free throw, pass,dribble,possession
-    ) + tuple(range(9,21)) # treat all unknown codes as end events
+    ) + tuple(range(9,21)) + (28,) # treat all unknown codes as end events
 
     # design choice: only use after 2014702 data so that x, y are in shot
     # design choice: only use cavs games
@@ -249,10 +249,13 @@ def loadPossession(game_file_path="cavs_games.txt", gamecodes=None):
                 
             
         try:
-            sqlprevpe = '''select *, max(time) from events where gamecode = %d and
-            pbp_seq_num != '' and event_id in %s and time < %f 
-            and quarter = %d''' % (pe.gamecode, str(end_events), pe.time, pe.quarter)
+            # sqlprevpe = '''select *, max(time) from events where gamecode = %d and
+            # pbp_seq_num != '' and event_id in %s and time < %f 
+            # and quarter = %d''' % (pe.gamecode, str(end_events), pe.time, pe.quarter)
 
+            sqlprevpe = '''select *, max(time) from events where gamecode = %d and
+            event_id in %s and time < %f 
+            and quarter = %d''' % (pe.gamecode, str(end_events), pe.time, pe.quarter)
            
             prevpe = innerc.execute(sqlprevpe).fetchone()
         except:

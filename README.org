@@ -26,9 +26,26 @@ Legacy code (eg. definition of possesion) is put into legacy folder
 
 Contains useful code for current project
 
-* Design choices
+* Event Meaning
 
-1. Should we normalize x, y location to the right?
+#+BEGIN_EXAMPLE
+event-id="10" event-description="Substitution"
+event-id="11" event-description="Timeout"
+event-id="12" event-description="Jump Ball"
+event-id="15" event-description="End Period"
+#+END_EXAMPLE
 
-2. Should we only use data when people cross half the court?
+For more search in NBA_FINALPBP_EXP\$2016020610.XML
 
+* Running process note
+
+0: team_defense_closeness (done)
+3: player_poss_count (done)
+4: player_frames_count (done)
+5: traj_length_dist (done)
+6: end_event_dist (done)
+
+* Design Choice
+
+ignore pbp_seq_num: don't use play by play definition of possession to mark
+previous event; Use my definition instead.

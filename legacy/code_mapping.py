@@ -18,6 +18,10 @@ code2event = {
     6: "Defensive Rebound",
     7: "Turnover",
     8: "Foul",
+    10: "Substitution",
+    11: "Timeout",
+    12: "Jump Ball",
+    15: "End Period",
     21: "Dribble",
     22: "Pass",
     23: "Possession",
@@ -60,7 +64,8 @@ code2team = {
     27: "Washington",
     28: "Toronto",
     29: "Memphis",
-    30: "Charlotte**"
+    30: "Charlotte",
+    5312: "Charlotte"
 }
 team2code = dict((v, n) for n, v in code2team.items())
 
