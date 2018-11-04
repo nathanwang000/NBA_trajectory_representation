@@ -2,21 +2,24 @@
 
 2018 basketball project
 
-Use player trajectories to predict player
+Use player trajectories to predict model player trajectories
 
-We use this [[https://docs.google.com/presentation/d/1UUQPWn69poKy3clSZHIpD6xedAG1rGOM1_9YFDfq0PU/edit#slide=id.g42b656bfa3_0_0][Google Slides]] to keep the notes
+# We use this [[https://docs.google.com/presentation/d/1UUQPWn69poKy3clSZHIpD6xedAG1rGOM1_9YFDfq0PU/edit#slide=id.g42b656bfa3_0_0][Google Slides]] to keep the notes
 
 * Code Structure
 
-We reuse the code genearted for 2017 basketball project. For information on
-that, refer to README_2017.org
+We reuse the code genearted for 2017 basketball project for preprocessing the data.
 
-Instead of focusing on doubleteaming, we record the whole possession: where a
-possession is the time from the player getting the ball until ball movement
-stops.
+We record the whole possession: where a possession is the time from the player
+getting the ball until ball movement stops.
 
-The data is contained in ../traj_data ordered by gamecode. To generate this
+The data is contained in ../new_traj_data ordered by gamecode. To generate this
 data, we use ../code/pipeline4.py.
+
+# The injury data scraper is contained in the scraper directory. Player names
+# comes from the legacy directory and can be generated with
+# legacy/get_player_names.py. This is deprecated, we no longer look at player
+# injury data.
 
 ** legacy
 
@@ -26,6 +29,14 @@ Legacy code (eg. definition of possesion) is put into legacy folder
 
 Contains useful code for current project
 
+* TODO Data 
+  
+  ../new_traj_data contains possession data for each game. 
+  We chop each possession into 1s chunks. We either predict the possession
+  outcome or next second frames, we store this data in nba_traj_prediction_data/.
+  We later turn this information into pytorch dataset and use the train test
+  pipeline developed for lstm-multi-task project
+  
 * Event Meaning
 
 #+BEGIN_EXAMPLE
@@ -36,14 +47,6 @@ event-id="15" event-description="End Period"
 #+END_EXAMPLE
 
 For more search in NBA_FINALPBP_EXP\$2016020610.XML
-
-* Running process note
-
-0: team_defense_closeness (done)
-3: player_poss_count (done)
-4: player_frames_count (done)
-5: traj_length_dist (done)
-6: end_event_dist (done)
 
 * Design Choice
 

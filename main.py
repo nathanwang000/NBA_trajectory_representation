@@ -8,7 +8,7 @@ import copy
 import tqdm
 from collections import Counter, defaultdict
 
-# Q1 data distribution
+####### data distribution
 def end_event_dist():
     end_events = []
     for game in tqdm.tqdm(glob.glob('../new_traj_data/*')):
@@ -34,7 +34,7 @@ def traj_length_debug():
                 print(fn)
                 return 
 
-# Q2 player of interest
+########## player of interest
 def player_frames_count():
     count = {}
     for game in tqdm.tqdm(glob.glob('../new_traj_data/*')):
@@ -56,7 +56,7 @@ def player_poss_count():
                 break
         joblib.dump(count, 'result/player_poss_count.pkl')
 
-# Q3 defense closeness
+######### defense closeness
 def player_dist(p0, p1):
     return np.sqrt((p0.x - p1.x)**2 + (p0.y - p1.y)**2)
 
