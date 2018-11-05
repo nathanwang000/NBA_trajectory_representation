@@ -6,7 +6,7 @@ import numpy as np
 import os
 import multiprocessing
 from sklearn.externals import joblib
-from lib.utility import is_attack_right
+from lib.process_possession import is_attack_right
 import time
 
 def process(games, output=False):

@@ -1,5 +1,5 @@
 from possession import *
-from lib.utility import cutPoss, isTransition, parallel_game, get_ball_handler
+from lib.process_possession import cutPoss, isTransition, parallel_game, get_ball_handler
 from sklearn.externals import joblib
 import numpy as np
 import pandas as pd

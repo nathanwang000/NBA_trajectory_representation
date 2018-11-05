@@ -101,7 +101,7 @@ def get_ball_handler(episode, offensive_pid):
     
 def parallel_game(f, game_dirs, savedir='result', cpus=60):
     # assumes do the same for each game
-    # game_dirs often given by glob.glob('../new_traj_data/*')
+    # game_dirs often given by glob.glob('../traj_data/*')
 
     savedir = os.path.join(savedir, f.__name__)
     os.system('mkdir -p %s'  % savedir)
