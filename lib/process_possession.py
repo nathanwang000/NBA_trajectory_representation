@@ -5,9 +5,27 @@ import multiprocessing
 import numpy as np
 import time
 import os
+import copy
 
 COURT = Court()
 
+def cutOnce(possession, second=1):
+    # cut possession into two parts: 1:(n-second), (n-second+1):n
+    frames_per_second = 25
+    episode_frames = int(frames_per_second * second)
+    total_frames = len(possession.frames)
+    
+    first, second = copy.deepcopy(possession), copy.deepcopy(possession)
+
+    if total_frames <= episode_frames:
+        cutoff = 0
+    else:
+        cutoff = total_frames - episode_frames
+        
+    second.set(possession.frames[cutoff:])
+    first.set(possession.frames[:cutoff])
+    return first, second
+    
 def cutPoss(possession, second=1):
     '''
     granularity determined by how many seconds
@@ -25,7 +43,9 @@ def cutPoss(possession, second=1):
         episode.offensive_team = possession.offensive_team
         episode.shots = possession.shots
         episode.fouled = possession.fouled
-
+        episode.expected_outcome = possession.expected_outcome
+        episode.attack_right = possession.attack_right
+        
         yield episode
 
         i = i + episode_frames
@@ -60,19 +80,28 @@ def on_left_or_right(episode):
     return all_on_left, all_on_right
     
 def is_attack_right(poss):
-    transition = False
-    prev_on_left, prev_on_right = False, False
+    # previous location
+    pleft, pmiddle, pright = False, False, False
+
     for episode in cutPoss(poss):
-        on_left, on_right = on_left_or_right(episode)
-        if (prev_on_left or transition) and on_right:
-            return True
-        if (prev_on_right or transition) and on_left:
+        left, right = on_left_or_right(episode)
+        middle = not left and not right
+
+        if (pmiddle or pright) and left:
             return False
-        transition = transition or (not on_left and not on_right)
-        prev_on_left = on_left
-        prev_on_right = on_right
-    return prev_on_right
-    
+        if (pmiddle or pleft) and right:
+            return True
+        if pleft and middle:
+            return True
+        if pright and middle:
+            return False
+        
+        pleft, pmiddle, pright = left, middle, right
+
+    if pmiddle: # all in transition, then look at ball direction
+        return poss.frames[-1].ball.x - poss.frames[0].ball.x > 0
+    return pright
+
 def isTransition(episode, attack_right):
     # see if all are on the same side
     all_on_left, all_on_right = on_left_or_right(episode)

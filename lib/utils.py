@@ -1,4 +1,4 @@
-import time, math, torch, shutil
+import time, math, torch, shutil, glob
 import numpy as np
 
 class AverageMeter(object):
@@ -50,6 +50,14 @@ def timeSince(since):
     m = math.floor(s / 60)
     s -= m * 60
     return '%dm %ds' % (m, s)
+
+def get_traj_locations(data_dir):
+    '''return traj_locations given data_dir, assume data directory contains
+    subdirectories containing individual possessions'''
+    traj_locations = []
+    for fn in glob.glob(data_dir + "/*"):
+        traj_locations.extend(glob.glob(fn + "/*"))
+    return traj_locations
 
 # debug function for MoW and MoE functions
 def print_grad(net):

@@ -8,8 +8,14 @@ import multiprocessing
 from sklearn.externals import joblib
 from lib.process_possession import is_attack_right
 import time
+import argparse
 
-def process(games, output=False):
+parser = argparse.ArgumentParser(description='bball 2018: data generataion')
+parser.add_argument('--debug', action='store_true',
+                    help='debug mode')
+args = parser.parse_args()
+
+def process(games, output=False, savedir='../traj_data'):
 
     COURT = Court()
     for i, possession in enumerate(loadPossession(None, games)):
@@ -57,10 +63,12 @@ def process(games, output=False):
 
         # get state, action for this possession
         possession.attack_right = is_attack_right(possession)
-        possession.expected_outcome = reward
-        os.system('mkdir -p ../traj_data/%s' % str(possession.gamecode))
-        joblib.dump(possession, "../traj_data/%s/%s.pkl" % (str(possession.gamecode),
-                                                            str(possession)))
+        possession.expected_outcome = final_reward
+
+        savesubdir = os.path.join(savedir, str(possession.gamecode))
+        savename = os.path.join(savesubdir, '%s.pkl' % str(possession))
+        os.system('mkdir -p %s' % savesubdir)
+        joblib.dump(possession, savename)
         
 def learning_free():
     # generate learning free data for sloan
@@ -80,5 +88,7 @@ def learning_free():
     print('finished preprocessing')
 
 if __name__ == '__main__':
-    # process(['2015030907'], output=True)
-    learning_free()
+    if args.debug:
+        process(['2015030907'], output=True, savedir='../debug_traj_data')
+    else:
+        learning_free()

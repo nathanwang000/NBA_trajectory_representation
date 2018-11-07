@@ -1,125 +1,80 @@
-from possession import *
-from lib.process_possession import cutPoss, isTransition, parallel_game, get_ball_handler
-from sklearn.externals import joblib
 import numpy as np
-import pandas as pd
-import glob
-import copy
-import tqdm
-from collections import Counter, defaultdict
+import os, copy
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
+import torchvision.transforms as transforms
+import torch.nn.functional as F
+import torch.optim as optim
+import time
+import math, tqdm
+from lib.utils import timeSince
+from lib.utils import random_split_dataset
+import random
+from lib.model import MODELS
+import torch.backends.cudnn as cudnn
+import warnings, argparse
+from lib.experiment import SYNTHETIC_EXPERIMENTS
 
-####### data distribution
-def end_event_dist():
-    end_events = []
-    for game in tqdm.tqdm(glob.glob('../new_traj_data/*')):
-        for fn in glob.glob(game + '/*'):
-            poss = joblib.load(fn)
-            end_events.append(poss.end_event)
-        joblib.dump(end_events, 'result/end_event_dist.pkl')
+model_names = MODELS.keys()
+exp_names = SYNTHETIC_EXPERIMENTS.keys()
 
-def traj_length_dist():
-    lengths = []
-    for game in tqdm.tqdm(glob.glob('../new_traj_data/*')):
-        for fn in glob.glob(game + '/*'):
-            poss = joblib.load(fn)
-            lengths.append(poss.start_time - poss.end_time)
-        joblib.dump(lengths, 'result/traj_length_dist.pkl')
+# parse arguments
+parser = argparse.ArgumentParser(description='bball 2018: trajectory representation')
+parser.add_argument('--arch', '-a', metavar='ARCH', default='MLP',
+                    choices=model_names,
+                    help='model architecture: ' +
+                    ' | '.join(model_names) +
+                    ' (default: MLP)')
+parser.add_argument('--seed', default=None, type=int,
+                    help='seed for initializing training. ')
+parser.add_argument('--use_gpu', action='store_true',
+                    help='whether or not use gpu')
+parser.add_argument('--smdir', default='models', type=str,
+                    help='directory to save model')
+parser.add_argument('--sddir', default='bball_data', type=str,
+                    help='directory to save bball data')
+parser.add_argument('--batch_size', default=32, type=int, metavar='B',
+                    help='batch_size')
+parser.add_argument('--niters', default=500, type=int, metavar='N',
+                    help='number of total iterations to run')
+parser.add_argument('--n_save_model', default=10, type=int,
+                    help='number of model save and validation eval in trainer')
+parser.add_argument('--exp', default="example", type=str,
+                    choices=exp_names,
+                    help='experiment name to run')
+parser.add_argument('--debug', action='store_true',
+                    help='debug mode')
+args = parser.parse_args()
 
-def traj_length_debug():
-    lengths = []
-    for game in glob.glob('../new_traj_data/*'):
-        for fn in glob.glob(game + '/*'):
-            poss = joblib.load(fn)
-            if poss.start_time - poss.end_time > 40:
-                print(fn)
-                return 
+################################## setting ############################################
+os.system('mkdir -p %s' % args.smdir)
+os.system('mkdir -p %s' % args.sddir)
 
-########## player of interest
-def player_frames_count():
-    count = {}
-    for game in tqdm.tqdm(glob.glob('../new_traj_data/*')):
-        for fn in glob.glob(game + '/*'):
-            poss = joblib.load(fn)
-            for f in poss.frames:
-                for p in f.players:
-                    count[p.id] = count.get(p.id, 0) + 1
-        joblib.dump(count, 'result/player_frames_count.pkl')
-
-def player_poss_count():
-    count = {}
-    for game in tqdm.tqdm(glob.glob('../new_traj_data/*')):
-        for fn in glob.glob(game + '/*'):
-            poss = joblib.load(fn)
-            for f in poss.frames:
-                for p in f.players:
-                    count[p.id] = count.get(p.id, 0) + 1
-                break
-        joblib.dump(count, 'result/player_poss_count.pkl')
-
-######### defense closeness
-def player_dist(p0, p1):
-    return np.sqrt((p0.x - p1.x)**2 + (p0.y - p1.y)**2)
-
-def poss_defense_closeness(poss):
-    dist = defaultdict(int) # distance for all offensive players
-    nframes = defaultdict(int)
-
-    for f in poss.frames:
-        # from the view of offensive player
-        for player in f.players:
-            if player.team == poss.offensive_team:
-                # find the defensive player
-                dplayers = [(d, player_dist(d, player))
-                            for d in f.players if d.team == poss.defensive_team]
-                d = sorted(dplayers, key=lambda x: x[1])[0]
-                dist[player.id] += d[1]
-                nframes[player.id] += 1
-
-    offensive_players = list(dist.keys())
-    ballhandler = get_ball_handler(poss, offensive_players)
-    isBallHandler = [op == ballhandler for op in offensive_players]
-    return [dist[op] / nframes[op] for op in offensive_players], isBallHandler, offensive_players
-
-def team_defense_closeness(game_dirs, savename):
-    '''
-    accurate to gamecode, quarter
-    '''
-    count = {}
-    for game in game_dirs:
-        for fn in glob.glob(game + '/*'):
-            poss = joblib.load(fn)
-
-            if count.get(poss.defensive_team, None) is None:
-                count[poss.defensive_team] = []
-
-            for episode in cutPoss(poss):
-                dist, isBallHandler, offensive_players = poss_defense_closeness(episode)
-                frameInfo = episode.frames[0].frameInfo
-                frameInfo.transition = isTransition(episode, poss.attack_right)
-                for i, d in enumerate(dist):
-                    f = copy.deepcopy(frameInfo)
-                    f.ballHandler = isBallHandler[i]
-                    f.offensive_player = offensive_players[i]
-                    count[episode.defensive_team].append((d, f))
-                
-        joblib.dump(count, savename)
-        
-if __name__ == '__main__':
-
-    game_dirs =  glob.glob('../new_traj_data/*')
+if args.seed is not None:
+    random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    cudnn.deterministic = True
+    warnings.warn('You have chosen to seed training. '
+                  'This will turn on the CUDNN deterministic setting, '
+                  'which can slow down your training considerably! '
+                  'You may see unexpected behavior when restarting '
+                  'from checkpoints.')
     
-    ######################### Q1 #######################
-    #end_event_dist()
-    #traj_length_dist()
-    #traj_length_debug() # for debugging purpose, print out the offending filename
+################################### get data ###########################################
+experiment = SYNTHETIC_EXPERIMENTS[args.exp]
+data = experiment.get_data(args)
 
-    ######################### Q2 #######################
-    #player_frames_count()
-    #player_poss_count()
+# todo: should do temporal splitting, but good for now
+train_set, val_set, test_set = random_split_dataset(data, [0.6, 0.1, 0.3])
 
-    ######################### Q3 #######################
-    #team_defense_closeness(game_dirs, 'result/team_defense_closeness.pkl')
+savedir_tr = os.path.join(args.sddir, 'train')
+savedir_val = os.path.join(args.sddir, 'val')
+savedir_te = os.path.join(args.sddir, 'test')
 
-    ## cannot do this because I need to write a combine function first
-    ## may not worth it, but definitely worth it for creating TMNIST dataset
-    parallel_game(team_defense_closeness, game_dirs, savedir='result')
+train_data = experiment.wrap_dataset(train_set, savedir_tr, args)
+val_data = experiment.wrap_dataset(val_set, savedir_val, args)
+test_data = experiment.wrap_dataset(test_set, savedir_te, args)
+
+######################################### run models ###################################
+experiment.run(args, train_data, val_data)

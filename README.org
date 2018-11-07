@@ -14,8 +14,19 @@ We record the whole possession: where a possession is the time from the player
 getting the ball until ball movement stops.
 
 The data is contained in ../traj_data ordered by gamecode (ask jiaxuan for where
-the data is located, don't need to generated twice). To generate this
-data, we run data_pipeline.py.
+the data is located, don't need to generated twice). To generate this data, we
+first run data_pipeline.py. Then use check_data to obtain defect_possession.pkl
+(containing a list of defect possessions). After removing those defect
+possessions using rm_defect_possessions.py, we have 807,997 possessions for 3
+years data (2014-2017).
+
+The entry point of running the code is main.py. use
+
+#+BEGIN_SRC bash
+python main.py -h
+#+END_SRC
+
+to see available command line options.
 
 # The injury data scraper is contained in the scraper directory. Player names
 # comes from the legacy directory and can be generated with
