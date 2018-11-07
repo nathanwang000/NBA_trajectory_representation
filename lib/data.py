@@ -36,7 +36,7 @@ def parallel_bball_data_helper(dataset, savedir, cpus=30):
     result_list = []
     pool = Pool(cpus)
 
-    tasks_per_cpu = math.ceil(len(dataset) / cpus)
+    tasks_per_cpu = min(math.ceil(len(dataset) / cpus), 10)
     # save meta information
     joblib.dump({'len': len(dataset),
                  'traj/file': tasks_per_cpu},

@@ -110,7 +110,7 @@ class Train(object):
             if self.use_gpu is not False:
                 x, y = x.cuda(), y.cuda()
 
-            output = torch.nn.functional.log_softmax(self.net(x), dim=1)
+            output = self.net(x)
             loss = self.criterion(output.view(-1), y.view(-1)) # regression loss
             loss_meter.update(loss)
 
@@ -202,7 +202,7 @@ class TrainFeedForward(Train):
     def train_step(self, x, y):
 
         self.optimizer.zero_grad()
-        output = torch.nn.functional.log_softmax(self.net(x), dim=1)
+        output = self.net(x)
         
         loss = self.criterion(output.view(-1), y.view(-1)) # regression loss
         loss.backward()

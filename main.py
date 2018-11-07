@@ -48,6 +48,10 @@ parser.add_argument('--debug', action='store_true',
 args = parser.parse_args()
 
 ################################## setting ############################################
+if args.debug:
+    args.sddir = 'bball_data/debug'
+    args.smdir = 'models/debug'
+
 os.system('mkdir -p %s' % args.smdir)
 os.system('mkdir -p %s' % args.sddir)
 
