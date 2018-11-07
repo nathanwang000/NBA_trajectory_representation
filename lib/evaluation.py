@@ -31,7 +31,7 @@ def plot_train_val(patterns, fontsize=15):
             plt.plot(dummy_trainer.smooth_valloss(), label=name)
 
     plt.legend(loc='center right', bbox_to_anchor=(1.5, 0.5))
-    plt.title('validation acc', fontsize=fontsize)
+    plt.title('validation loss', fontsize=fontsize)
     plt.grid()
     plt.show()
     
@@ -93,7 +93,7 @@ def plot_train_val_multiple(patterns, colors=['blue', 'orange', 'green', 'red',
         if name is not "":
             plot_fill(val_curves, label=name, color=colors[i])
     plt.legend(loc='center right', bbox_to_anchor=(1.5, 0.5))
-    plt.title('validation acc', fontsize=fontsize)
+    plt.title('validation loss', fontsize=fontsize)
     plt.grid()
     plt.show()
 

@@ -22,24 +22,34 @@ class LoadedBballData(Dataset):
         xs, ys = joblib.load(os.path.join(self.data_path, '%d.pkl' % file_index))
         return xs[within_file_index], ys[within_file_index]
 
-def save_bball_data_helper(dataset, indices, savename):
+def save_bball_data_helper_helper(dataset, indices, savename):
     # get dataset saved
     xs = []
     ys = []
-    for i in tqdm.tqdm(indices):
+    for i in indices:
         x, y = dataset[i]
         xs.append(x)
         ys.append(y)
     joblib.dump((xs, ys), savename)
+    
+def save_bball_data_helper(dataset, indices, savedir, base_index, traj_per_file):
+    nchunks = math.ceil(len(indices) / traj_per_file)
+    for i in tqdm.tqdm(range(nchunks)):
+        sub_indices = indices[(i*traj_per_file): ((i+1)*traj_per_file)]
+        savename = os.path.join(savedir, '%d.pkl' % (base_index + i))
+        save_bball_data_helper_helper(dataset, sub_indices, savename)
 
-def parallel_bball_data_helper(dataset, savedir, cpus=30):
+def parallel_bball_data_helper(dataset, savedir, cpus=30, traj_per_file=10):
     result_list = []
     pool = Pool(cpus)
 
-    tasks_per_cpu = min(math.ceil(len(dataset) / cpus), 10)
+    tasks_per_cpu = max(math.ceil(len(dataset) / cpus), traj_per_file)
+    # make tasks a multiple of traj_per_file
+    tasks_per_cpu = math.ceil(tasks_per_cpu / traj_per_file) * traj_per_file
+
     # save meta information
     joblib.dump({'len': len(dataset),
-                 'traj/file': tasks_per_cpu},
+                 'traj/file': traj_per_file},
                 os.path.join(savedir, 'meta.pkl'))
 
     index = 0
@@ -47,10 +57,12 @@ def parallel_bball_data_helper(dataset, savedir, cpus=30):
     while index < len(dataset):
         indices = range(index, min(index + tasks_per_cpu, len(dataset)))
         index = index + tasks_per_cpu
-        savename = os.path.join(savedir, '%d.pkl' % i)
-        i += 1
+
         result_list.append(pool.apply_async(func=save_bball_data_helper,
-                                            args=(dataset, indices, savename)))
+                                            args=(dataset, indices,
+                                                  savedir, i, traj_per_file)))
+        i += int(tasks_per_cpu / traj_per_file)
+        
     while True:
         try:
             def call_if_ready(result):
@@ -70,6 +82,8 @@ def parallel_bball_data_helper(dataset, savedir, cpus=30):
     print('finished preprocessing')
 
 def save_bball_data(dataset, savedir, override_existing=False):
+
+    print(savedir)
     file_exist = os.path.exists(savedir)
     if file_exist:
         warnings.warn("%s exist, override: %r" % (savedir, override_existing))
@@ -82,11 +96,6 @@ def save_bball_data(dataset, savedir, override_existing=False):
 
         # get dataset saved
         parallel_bball_data_helper(dataset, savedir)
-
-        # indices = range(len(dataset))
-        # index = 0
-        # save_bball_data_helper(dataset, indices,
-        #                        os.path.join(savedir, "%d.pkl" % index))
         print("==>save data done")
 
 def load_bball_data(load_path):
