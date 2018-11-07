@@ -158,7 +158,7 @@ class Train(object):
                 if iter % self.print_every == 0:
                     table_printer.print([iter,
                                          "%d%%" % (iter / self.n_iters * 100),
-                                         timeSince(start),
+                                         timeSince(t),
                                          batch_time.avg,
                                          data_time.avg,
                                          losses.avg])
@@ -194,7 +194,8 @@ class Train(object):
                     }, is_best)
                 #################### note keeping end ###########################
             
-                end = time.time()                
+                end = time.time()    
+
 
 ######################################## derived models ################################
 class TrainFeedForward(Train):
@@ -210,4 +211,114 @@ class TrainFeedForward(Train):
         self.optimizer.step()
         return output, loss.item()
 
+class TrainLSTM(Train):
 
+    def train_step(self, x, y, lens):
+
+        self.optimizer.zero_grad()
+        output = self.net(x, lens)
+        
+        loss = self.criterion(output.view(-1), y.view(-1)) # regression loss
+        loss.backward()
+        
+        self.optimizer.step()
+        return output, loss.item()
+
+    def train(self):
+        self.net.train()
+        losses = AverageMeter()
+        data_time = AverageMeter()
+        batch_time = AverageMeter()
+        table_printer = PrintTable()
+
+        table_printer.print(['#iter', 'progress', 'total_time',
+                             'batch_time', 'data_time', 'avg_loss'])
+        
+        start = time.time()
+        end = time.time()
+
+        iter = self.start_iter
+        while True:
+            if iter > self.n_iters: break
+                
+            for x, y, lens in self.data:
+                iter += 1
+                if iter > self.n_iters: break
+
+                # measure data loading time
+                data_time.update(time.time() - end)
+
+                x, y = x.float(), y.float()
+                if self.use_gpu is not False:
+                    x, y = x.cuda(), y.cuda()
+                output, loss = self.train_step(x, y, lens)
+
+                losses.update(loss, self.batch_size)
+
+                # measure elapsed time
+                batch_time.update(time.time() - end)
+
+                #################### note keeping ###########################
+                # Print iter number, loss, etc.
+                if iter % self.print_every == 0:
+                    table_printer.print([iter,
+                                         "%d%%" % (iter / self.n_iters * 100),
+                                         timeSince(t),
+                                         batch_time.avg,
+                                         data_time.avg,
+                                         losses.avg])
+
+                if iter % self.plot_every == 0:
+                    # Add current loss avg to list of losses
+                    self.all_losses.append(losses.val)
+                    if len(self.val_losses) == 0: 
+                        self.val_losses.append(self.val_loss())
+                    else:
+                        self.val_losses.append(self.val_losses[-1])
+
+                if iter % self.save_every == 0 or iter == self.n_iters:
+                    val_loss = self.val_loss()
+                    self.val_losses.append(val_loss)
+                    is_best = False
+                    if val_loss is not None:
+                        if self.best_loss is None:
+                            self.best_loss = val_loss
+                            is_best = True
+                        else:
+                            is_best = self.best_loss > val_loss                        
+                            self.best_loss = max(val_loss, self.best_loss)
+
+                    self.save_checkpoint({
+                        'niter': iter + 1,
+                        'arch': str(type(self.net)),
+                        'state_dict': self.net.state_dict(),
+                        'best_loss': self.best_loss,
+                        'optimizer': self.optimizer.state_dict(),
+                        'train_losses': self.all_losses,
+                        'val_losses': self.val_losses
+                    }, is_best)
+                #################### note keeping end ###########################
+            
+                end = time.time()  
+                
+    def val_loss(self):
+
+        if self.val_data is None:
+            return None
+
+        print('==> evaluating validation loss')
+        self.net.eval()
+        loss_meter = AverageMeter()
+        for x, y, lens in self.val_data:
+            x, y = x.float(), y.float()            
+            if self.use_gpu is not False:
+                x, y = x.cuda(), y.cuda()
+
+            output = self.net(x, lens)
+            loss = self.criterion(output.view(-1), y.view(-1)) # regression loss
+            loss_meter.update(loss)
+
+        print('==> validation loss is %.3f' % loss_meter.avg)
+        self.scheduler.step(loss_meter.avg)
+        self.net.train()
+        return loss_meter.avg
