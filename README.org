@@ -13,12 +13,13 @@ We reuse the code genearted for 2017 basketball project for preprocessing the da
 We record the whole possession: where a possession is the time from the player
 getting the ball until ball movement stops.
 
-The data is contained in ../traj_data ordered by gamecode (ask jiaxuan for where
-the data is located, don't need to generated twice). To generate this data, we
-first run data_pipeline.py. Then use check_data to obtain defect_possession.pkl
-(containing a list of defect possessions). After removing those defect
-possessions using rm_defect_possessions.py, we have 763,225 possessions for 3
-years data (2014-2017).
+The data is contained on mld3 server: /data1/bball2017/traj_data ordered by
+gamecode. To generate this data, we first run data_pipeline.py. Then use
+check_data to obtain defect_possession.pkl (containing a list of defect
+possessions). After removing those defect possessions using
+rm_defect_possessions.py, we have 763,225 possessions for 3 years data
+(2014-2017). Note that the data is already generated, don't try to generate it
+again!
 
 The entry point of running the code is main.py. use
 
