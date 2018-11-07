@@ -8,7 +8,7 @@ Use player trajectories to predict model player trajectories
 
 * Code Structure
 
-We reuse the code genearted for 2017 basketball project for preprocessing the data.
+We reuse the [[https://gitlab.eecs.umich.edu/jiaxuan/bball2017][code genearted for 2017 basketball project]] for preprocessing the data.
 
 We record the whole possession: where a possession is the time from the player
 getting the ball until ball movement stops.
@@ -42,11 +42,12 @@ Legacy code (eg. definition of possesion) is put into legacy folder
 
 Contains useful code for current project
 
-* Data 
+* Data and Prediction Task
   
-  ../traj_data contains possession data for each game.  We chop each possession
-  into 1s chunks. We either predict the possession outcome or next second
-  frames. We later turn this information into pytorch dataset.
+  mld3 server: /data1/bball2017/traj_data contains possession data for each
+  game.  We chop each possession into 1s chunks. We either predict the
+  possession outcome or next second frames. We later turn this information into
+  pytorch dataset.
   
 * Event Meaning
 
