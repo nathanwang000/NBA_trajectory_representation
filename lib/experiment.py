@@ -56,6 +56,7 @@ class ExampleExperiment(ImageExperiment):
         else:
             path = '../traj_data'
         traj_locations = get_traj_locations(path)
+        print(args.debug, path, traj_locations)
         transform_image_data = transform_producer(1)
         bball_dataset = BballDataset(traj_locations, transform=transform_image_data)
         return bball_dataset
