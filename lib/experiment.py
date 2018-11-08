@@ -7,6 +7,7 @@ from lib.data import BballDataset, save_bball_data, load_bball_data
 from lib.utils import get_traj_locations
 from lib.bball_transform.image_transform import transform_producer
 from lib.bball_transform.ts_transform import transform_producer as transform_producer_ts
+from lib.bball_transform.flat_transform import transform_producer as transform_producer_flat
 
 # exact setting for each experiment ran
 SYNTHETIC_EXPERIMENTS = {}
@@ -22,9 +23,11 @@ class ImageExperiment(object):
 
             if args.arch == 'MLP':
                 savename = 'mlp.pth.tar'
+
         elif args.arch == 'LSTM':
             net = MODELS[archs.arch](22, args.hidden_size, args.num_layers, args.dropout, args.use_gpu])
             savename = 'lstm.pth.tar'
+
         savename = os.path.join(args.smdir, savename)
         optimizer = torch.optim.Adam(net.parameters())
         criterion = nn.MSELoss()
@@ -66,7 +69,6 @@ class ExampleExperiment(ImageExperiment):
         dset = load_bball_data(savedir)
 
         return DataLoader(dset, batch_size=args.batch_size) 
-
 
 class TimeSeriesExperiment(ImageExperiment):
 
@@ -110,6 +112,29 @@ class TimeSeriesExperiment(ImageExperiment):
         return DataLoader(dset, batch_size = args.batch_size, collate_fn = my_collate, batch_first = True)
 
 
+class FlatInputExperiment(ImageExperiment):
+
+    def get_data(self, args):
+        if args.debug:
+            path = '../debug_traj_data'
+        else:
+            path = '../traj_data'
+        traj_locations = get_traj_locations(path)
+        transform_flat_data = transform_producer_flat(1)
+        bball_dataset = BballDataset(traj_locations, transform=transform_flat_data)
+        return bball_dataset
+
+    def wrap_dataset(self, dset, savedir, args):
+        # save the data
+        save_bball_data(dset, savedir)
+
+        # return dataloader of the saved data
+        # todo: shuffle data, increase number of worker
+        dset = load_bball_data(savedir)
+
+        return DataLoader(dset, batch_size=args.batch_size)
+
+
 SYNTHETIC_EXPERIMENTS['example'] = ExampleExperiment()
 SYNTHETIC_EXPERIMENTS['timeseries'] = TimeSeriesExperiment()
-
+SYNTHETIC_EXPERIMENTS['flatinput'] = FlatInputExperiment()

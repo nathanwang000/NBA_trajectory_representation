@@ -8,7 +8,7 @@ from legacy.animate_play import framePlot
 import pickle, os
 from legacy.data_statistics import STATS
 
-# DBFILE = os.environ['BBALLDB']
+DBFILE = os.environ['BBALLDB']
 
 Player = namedtuple('Player', ['x', 'y', 'id', 'team'])
 Ball = namedtuple('Ball', ['x', 'y', 'z'])
