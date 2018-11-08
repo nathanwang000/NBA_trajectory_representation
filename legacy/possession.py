@@ -8,6 +8,11 @@ from legacy.animate_play import framePlot
 import pickle, os
 from legacy.data_statistics import STATS
 
+<<<<<<< HEAD
+=======
+# DBFILE = os.environ['BBALLDB']
+
+>>>>>>> f5b5a3c72f8401a3156ed75be79b875ee8eac847
 Player = namedtuple('Player', ['x', 'y', 'id', 'team'])
 Ball = namedtuple('Ball', ['x', 'y', 'z'])
 Ref = namedtuple('Ref', ['x', 'y', 'id'])
