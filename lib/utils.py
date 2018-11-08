@@ -51,27 +51,18 @@ def timeSince(since):
     s -= m * 60
     return '%dm %ds' % (m, s)
 
-def get_traj_locations(data_dir):
+def get_traj_locations(data_dir, criterion=lambda fn: True):
     '''return traj_locations given data_dir, assume data directory contains
     subdirectories containing individual possessions'''
     traj_locations = []
     for fn in glob.glob(data_dir + "/*"):
-        traj_locations.extend(glob.glob(fn + "/*"))
+        for poss_fn in glob.glob(fn + "/*"):
+            if criterion(poss_fn):
+                traj_locations.append(poss_fn)
     return traj_locations
 
-# debug function for MoW and MoE functions
-def print_grad(net):
-    print('\nmodels:')
-    for i, m in enumerate(net.models):
-        print(i)
-        for p in m.parameters():
-            if p.grad is not None:
-                print(torch.sum(torch.abs(p.grad)))
-
-    print('\nmeta models:')
-    for i, m in enumerate(net.meta_models):
-        print(i)
-        for p in m.parameters():
-            if p.grad is not None:            
-                print(torch.sum(torch.abs(p.grad)))
-    
+# criteria for get_traj_locations
+def shot_only_criterion(fn):
+    if fn.split(',')[-2].strip() in ('Field Goal Made', 'Field Goal Missed'):
+        return True
+    return False
