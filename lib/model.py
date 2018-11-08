@@ -41,12 +41,13 @@ class LSTM(nn.Module):
         #Deal with Pytorch initialization for LSTMs being flawed
         for name,param in self.lstm.named_parameters():
             if 'weight' in name: 
-                init.xavier_uniform_(param)
+                init.kaiming_uniform(param)
         
         #TODO: Layer Norm?
         
-        self.fc = nn.Linear(hidden_size, output_dim)
-        self.sm = nn.Sigmoid(dim=2)
+        self.fc1 = nn.Linear(hidden_size, 50)
+        self.fc2 = nn.Linear(50, 1)
+        self.relu = nn.ReLu(dim=2)
         self.float = self.FloatTensor
         if use_gpu:
             self.float = torch.cuda.FloatTensor
@@ -60,13 +61,13 @@ class LSTM(nn.Module):
         return torch.cat(final_dist).view(batch_size, 1, self.output_dim)
     
     def forward(self, input, lengths):
-        input = input.numpy()
-        lengths = lengths.numpy() 
+        input = input.cpu()numpy()
+        lengths = lengths.cpu().numpy() 
         #Find lengths of all intervals
         perm_index = reversed(sorted(range(len(lengths)), key=lambda k: lengths[k]))
         
         #Sort the input by length in order to pad, pack sequence for LSTM
-        input = [torch.tensor(input[i]) for i in perm_index]
+        input = [torch.tensor(input[i]).view(-1, 22) for i in perm_index]
         lengths = list(reversed(sorted(lengths)))
         padded = rnn.pad_sequence(input, batch_first = True).view(len(input), max(lengths), 1)
         pack_padded = rnn.pack_padded_sequence(padded, lengths, batch_first = True)
@@ -87,10 +88,12 @@ class LSTM(nn.Module):
 
         #Unpack pad packed sequence, run through linear layer      
         unpacked, lens = rnn.pad_packed_sequence(lstm_output,batch_first = True)
-        y = self.fc(unpacked)
+        y = self.fc1(unpacked)
         
         #Deal with uneven lengths
-        y_final = self.sm(self._get_final_y(y, batch_size, lengths))
+        y_intermediate = self.relu(self._get_final_y(y, batch_size, lengths))
+        
+        y_final = self.fc2(y_intermediate)
         
         return y_final
 

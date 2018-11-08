@@ -40,6 +40,12 @@ parser.add_argument('--niters', default=500, type=int, metavar='N',
                     help='number of total iterations to run')
 parser.add_argument('--n_save_model', default=10, type=int,
                     help='number of model save and validation eval in trainer')
+parser.add_argument('--hidden_size', default=300, type=int,
+                    help='hidden size for LSTM model')
+parser.add_argument('--num_layers', default=1, type=int,
+                    help='number of layers for LSTM model')
+parser.add_argument('--dropout', default=0, type=float,
+                    help='dropout for model')
 parser.add_argument('--exp', default="example", type=str,
                     choices=exp_names,
                     help='experiment name to run')
