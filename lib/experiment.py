@@ -83,16 +83,6 @@ class ImageShotEventExperiment(ImageExperiment):
         bball_dataset = BballDataset(traj_locations, transform=transform_image_data)
         return bball_dataset
 
-    def wrap_dataset(self, dset, savedir, args):
-        # save the data
-        save_bball_data(dset, savedir)
-
-        # return dataloader of the saved data
-        # todo: shuffle data, increase number of worker
-        dset = load_bball_data(savedir)
-
-        return DataLoader(dset, batch_size=args.batch_size) 
-
 class TimeSeriesExperiment(ImageExperiment):
 
     def get_data(self, args):
