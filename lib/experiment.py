@@ -23,7 +23,7 @@ class ImageExperiment(object):
             if args.arch == 'MLP':
                 savename = 'mlp.pth.tar'
         elif args.arch == 'LSTM':
-            net = MODELS[archs.arch](22, args.hidden_size, args.num_layers, args.dropout, args.use_gpu])
+            net = MODELS[archs.arch](22, args.hidden_size, args.num_layers, args.dropout, args.use_gpu)
             savename = 'lstm.pth.tar'
         savename = os.path.join(args.smdir, savename)
         optimizer = torch.optim.Adam(net.parameters())
@@ -100,7 +100,7 @@ class TimeSeriesExperiment(ImageExperiment):
 
         def my_collate(batch):
             data = [item[0] for item in batch]
-            lengths = [len[d[0] for d in data]]
+            lengths = [len(d[0]) for d in data]
             data = torch.stack([torch.Tensor(x[0]).float() for x in pad_data(data)])
             target = [item[1] for item in batch]
             target = torch.FloatTensor(target)

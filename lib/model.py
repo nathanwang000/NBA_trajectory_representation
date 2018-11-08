@@ -61,7 +61,7 @@ class LSTM(nn.Module):
         return torch.cat(final_dist).view(batch_size, 1, self.output_dim)
     
     def forward(self, input, lengths):
-        input = input.cpu()numpy()
+        input = input.cpu().numpy()
         lengths = lengths.cpu().numpy() 
         #Find lengths of all intervals
         perm_index = reversed(sorted(range(len(lengths)), key=lambda k: lengths[k]))

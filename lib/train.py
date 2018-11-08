@@ -158,7 +158,7 @@ class Train(object):
                 if iter % self.print_every == 0:
                     table_printer.print([iter,
                                          "%d%%" % (iter / self.n_iters * 100),
-                                         timeSince(t),
+                                         timeSince(start),
                                          batch_time.avg,
                                          data_time.avg,
                                          losses.avg])
@@ -263,7 +263,7 @@ class TrainLSTM(Train):
                 if iter % self.print_every == 0:
                     table_printer.print([iter,
                                          "%d%%" % (iter / self.n_iters * 100),
-                                         timeSince(t),
+                                         timeSince(start),
                                          batch_time.avg,
                                          data_time.avg,
                                          losses.avg])
