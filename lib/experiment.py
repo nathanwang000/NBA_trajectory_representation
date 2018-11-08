@@ -79,11 +79,6 @@ class ImageShotEventExperiment(ImageExperiment):
         else:
             path = '../traj_data'
 
-        traj_locations = get_traj_locations(path, shot_only_criterion)
-        transform_image_data = transform_producer(1)
-        bball_dataset = BballDataset(traj_locations, transform=transform_image_data)
-        return bball_dataset
-
 class TimeSeriesExperiment(ImageExperiment):
 
     def get_data(self, args):
