@@ -70,3 +70,22 @@ def shot_only_criterion(fn):
     if fn.split(',')[-2].strip() in ('Field Goal Made', 'Field Goal Missed'):
         return True
     return False
+
+def shot_length_criterion(fn, min_len=3, max_len=24):
+
+    '''
+
+    This criterion selects shot possessions with length >= 3secs and <= 24 secs
+
+    :param fn: trajectory filename
+    :param min_len: minimum number of frames
+    :param max_len: maximum number of frames
+    :return: True or False
+    '''
+
+    traj_len = eval(fn.split(',')[2]) # calculate trajectory length using wall clock time
+
+    if shot_only_criterion(fn) and traj_len >= min_len and traj_len <= max_len:
+        return True
+
+    return False

@@ -4,7 +4,7 @@ from lib.train import TrainFeedForward
 from lib.model import MODELS
 from torch.utils.data import DataLoader
 from lib.data import BballDataset, save_bball_data, load_bball_data
-from lib.utils import get_traj_locations, shot_only_criterion
+from lib.utils import get_traj_locations, shot_only_criterion, shot_length_criterion
 from lib.bball_transform.image_transform import transform_producer
 from lib.bball_transform.ts_transform import transform_producer as transform_producer_ts
 from lib.bball_transform.flat_transform import transform_producer as transform_producer_flat
@@ -50,9 +50,15 @@ class ImageExperiment(object):
 
     def get_train_val_test(self, args):
 
-        train_path = '/data/bball/data2018/train_traj/'
-        val_path = '/data/bball/data2018/val_traj/'
-        test_path = '/data/bball/data2018/test_traj/'
+        if args.debug:
+            train_path = '/data/bball/data2018/train_traj_debug/'
+            val_path = '/data/bball/data2018/val_traj_debug/'
+            test_path = '/data/bball/data2018/test_traj_debug/'
+        else:
+            train_path = '/data/bball/data2018/train_traj/'
+            val_path = '/data/bball/data2018/val_traj/'
+            test_path = '/data/bball/data2018/test_traj/'
+
 
         train_set = self.get_data(args, train_path)
         val_set = self.get_data(args, val_path)
@@ -63,12 +69,8 @@ class ImageExperiment(object):
 class ExampleExperiment(ImageExperiment):
 
     def get_data(self, args, path):
-        # if args.debug:
-        #     path = relative_path + 'debug_traj_data'
-        # else:
-        #     path = relative_path + 'traj_data'
 
-        traj_locations = get_traj_locations(path)
+        traj_locations = get_traj_locations(path, criterion=shot_length_criterion)
         transform_image_data = transform_producer(1)
         bball_dataset = BballDataset(traj_locations, transform=transform_image_data)
         return bball_dataset
@@ -86,19 +88,13 @@ class ExampleExperiment(ImageExperiment):
 class ImageShotEventExperiment(ImageExperiment):
 
     def get_data(self, args, path):
-        if args.debug:
-            path = '../debug_traj_data'
-        else:
-            path = '../traj_data'
+        pass
 
 class TimeSeriesExperiment(ImageExperiment):
 
     def get_data(self, args, path):
-        # if args.debug:
-        #     path = '../debug_traj_data'
-        # else:
-        #     path = '../traj_data'
-        traj_locations = get_traj_locations(path)
+
+        traj_locations = get_traj_locations(path, criterion=shot_length_criterion)
         transform_ts_data = transform_producer_ts(1)
         bball_dataset = BballDataset(traj_locations, transform=transform_ts_data)
         return bball_dataset
@@ -136,11 +132,8 @@ class TimeSeriesExperiment(ImageExperiment):
 class FlatInputExperiment(ImageExperiment):
 
     def get_data(self, args, path):
-        # if args.debug:
-        #     path = '../debug_traj_data'
-        # else:
-        #     path = '../traj_data'
-        traj_locations = get_traj_locations(path, criterion=shot_only_criterion)
+
+        traj_locations = get_traj_locations(path, criterion=shot_length_criterion)
         transform_flat_data = transform_producer_flat(1)
         bball_dataset = BballDataset(traj_locations, transform=transform_flat_data)
         return bball_dataset
