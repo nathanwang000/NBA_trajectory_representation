@@ -73,10 +73,12 @@ if args.seed is not None:
     
 ################################### get data ###########################################
 experiment = SYNTHETIC_EXPERIMENTS[args.exp]
-data = experiment.get_data(args)
+# data = experiment.get_data(args)
 
+train_set, val_set, test_set = experiment.get_train_val_test(args)
+print(len(train_set))
 # todo: should do temporal splitting, but good for now
-train_set, val_set, test_set = random_split_dataset(data, [0.6, 0.1, 0.3])
+# train_set, val_set, test_set = random_split_dataset(data, [0.6, 0.1, 0.3])
 
 savedir_tr = os.path.join(args.sddir, 'train')
 savedir_val = os.path.join(args.sddir, 'val')

@@ -67,7 +67,7 @@ def expand_trajectory(episode):
     return np.array(final_ts)
 
 
-def episode2ts(episode):
+def episode2flat(episode):
     return torch.from_numpy(expand_trajectory(episode)).float()
 
 

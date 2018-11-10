@@ -1,6 +1,8 @@
 import time, math, torch, shutil, glob
 import numpy as np
 
+import os
+
 class AverageMeter(object):
     """Computes and stores the average and current value"""
     def __init__(self):
@@ -55,8 +57,10 @@ def get_traj_locations(data_dir, criterion=lambda fn: True):
     '''return traj_locations given data_dir, assume data directory contains
     subdirectories containing individual possessions'''
     traj_locations = []
+
     for fn in glob.glob(data_dir + "/*"):
         for poss_fn in glob.glob(fn + "/*"):
+            # print(poss_fn)
             if criterion(poss_fn):
                 traj_locations.append(poss_fn)
     return traj_locations

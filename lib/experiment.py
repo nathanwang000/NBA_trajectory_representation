@@ -14,7 +14,7 @@ SYNTHETIC_EXPERIMENTS = {}
 
 class ImageExperiment(object):
 
-    def get_data(self, args):
+    def get_data(self, args, path):
         raise NotImplementedError()
         
     def run(self, args, train_data, val_data):
@@ -48,15 +48,27 @@ class ImageExperiment(object):
             trainer.load_checkpoint(savename)
         trainer.train()
 
+    def get_train_val_test(self, args):
+
+        train_path = '/data/bball/data2018/train_traj/'
+        val_path = '/data/bball/data2018/val_traj/'
+        test_path = '/data/bball/data2018/test_traj/'
+
+        train_set = self.get_data(args, train_path)
+        val_set = self.get_data(args, val_path)
+        test_set = self.get_data(args, test_path)
+
+        return train_set, val_set, test_set
+
 class ExampleExperiment(ImageExperiment):
 
-    def get_data(self, args):
-        if args.debug:
-            path = '../debug_traj_data'
-        else:
-            path = '../traj_data'
+    def get_data(self, args, path):
+        # if args.debug:
+        #     path = relative_path + 'debug_traj_data'
+        # else:
+        #     path = relative_path + 'traj_data'
+
         traj_locations = get_traj_locations(path)
-        print(args.debug, path, traj_locations)
         transform_image_data = transform_producer(1)
         bball_dataset = BballDataset(traj_locations, transform=transform_image_data)
         return bball_dataset
@@ -73,7 +85,7 @@ class ExampleExperiment(ImageExperiment):
 
 class ImageShotEventExperiment(ImageExperiment):
 
-    def get_data(self, args):
+    def get_data(self, args, path):
         if args.debug:
             path = '../debug_traj_data'
         else:
@@ -81,11 +93,11 @@ class ImageShotEventExperiment(ImageExperiment):
 
 class TimeSeriesExperiment(ImageExperiment):
 
-    def get_data(self, args):
-        if args.debug:
-            path = '../debug_traj_data'
-        else:
-            path = '../traj_data'
+    def get_data(self, args, path):
+        # if args.debug:
+        #     path = '../debug_traj_data'
+        # else:
+        #     path = '../traj_data'
         traj_locations = get_traj_locations(path)
         transform_ts_data = transform_producer_ts(1)
         bball_dataset = BballDataset(traj_locations, transform=transform_ts_data)
@@ -123,12 +135,12 @@ class TimeSeriesExperiment(ImageExperiment):
 
 class FlatInputExperiment(ImageExperiment):
 
-    def get_data(self, args):
-        if args.debug:
-            path = '../debug_traj_data'
-        else:
-            path = '../traj_data'
-        traj_locations = get_traj_locations(path)
+    def get_data(self, args, path):
+        # if args.debug:
+        #     path = '../debug_traj_data'
+        # else:
+        #     path = '../traj_data'
+        traj_locations = get_traj_locations(path, criterion=shot_only_criterion)
         transform_flat_data = transform_producer_flat(1)
         bball_dataset = BballDataset(traj_locations, transform=transform_flat_data)
         return bball_dataset

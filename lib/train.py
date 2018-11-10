@@ -137,6 +137,7 @@ class Train(object):
             if iter > self.n_iters: break
                 
             for x, y in self.data:
+
                 iter += 1
                 if iter > self.n_iters: break
 
