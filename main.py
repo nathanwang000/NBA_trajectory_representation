@@ -30,6 +30,9 @@ parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
 parser.add_argument('--use_gpu', action='store_true',
                     help='whether or not use gpu')
+parser.add_argument('--device', default=0, type=int, help='set the gpu id to use')
+parser.add_argument('--num_workers', default=1, type=int, help='number of workers to load data')
+
 parser.add_argument('--smdir', default='models', type=str,
                     help='directory to save model')
 parser.add_argument('--sddir', default='bball_data', type=str,
@@ -40,6 +43,8 @@ parser.add_argument('--niters', default=500, type=int, metavar='N',
                     help='number of total iterations to run')
 parser.add_argument('--n_save_model', default=10, type=int,
                     help='number of model save and validation eval in trainer')
+
+parser.add_argument('--input_dim', default=94 * 50 * 11, type=int, help='input size for the network')
 parser.add_argument('--hidden_size', default=300, type=int,
                     help='hidden size for LSTM model')
 parser.add_argument('--num_layers', default=1, type=int,
@@ -51,7 +56,17 @@ parser.add_argument('--exp', default="example", type=str,
                     help='experiment name to run')
 parser.add_argument('--debug', action='store_true',
                     help='debug mode')
+
+# flat input settings
+parser.add_argument('--trajlen', default=2, type=int, help='the length of trajtories to use as the flat input')
+
+
 args = parser.parse_args()
+
+torch.cuda.set_device(args.device)
+
+if args.exp == 'flatinput':
+    args.input_dim = args.trajlen * 25 * 23
 
 ################################## setting ############################################
 if args.debug:

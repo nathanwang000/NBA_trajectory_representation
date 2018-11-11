@@ -4,18 +4,9 @@ for PyTorch dataset. To add in order of players, refer to
 https://gitlab.eecs.umich.edu/jiaxuan/bball2017/blob/master/lib/training/dataset.py
 '''
 from lib.process_possession import cutOnce
+# from collections import namedtuple
 import numpy as np
 import torch
-
-''' 
-transform takes a legacy.possession as input and output data needed for __getitem__
-for PyTorch dataset. To add in order of players, refer to 
-https://gitlab.eecs.umich.edu/jiaxuan/bball2017/blob/master/lib/training/dataset.py
-'''
-from lib.process_possession import cutOnce
-import numpy as np
-import torch
-
 
 def order_team_players(players, gamecode):
     # todo: sort by position
@@ -68,17 +59,46 @@ def expand_trajectory(episode):
 
 
 def episode2flat(episode):
-    return torch.from_numpy(expand_trajectory(episode)).float()
 
+    # traj = namedtuple('Trajectory', ['xp', 'yp', 'xb', 'yb', 'zb'])
+    xp = []
+    yp = []
+    xb = []
+    yb = []
+    zb = []
+    for frame in episode.frames:
+        for player in frame.players:
+            xp.append(player.x)
+            yp.append(player.y)
+
+        xb.append(frame.ball.x)
+        yb.append(frame.ball.y)
+        zb.append(frame.ball.z)
+
+    xp, yp, xb, yb, zb = np.array(xp), np.array(yp), np.array(xb), np.array(yb), np.array(zb)
+
+    xp = xp.reshape(-1,10)
+    yp = yp.reshape(-1,10)
+    xb = xb.reshape(-1,1)
+    yb = yb.reshape(-1,1)
+    zb = zb.reshape(-1,1)
+
+    return np.hstack((xp, yp, xb, yb, zb)).reshape(-1)
 
 #################### main function #################################
-def transform_producer(up_to=1):
-    def transform_ts_data(poss):
-        # chop it up, turn each episode into image data, and output (x, y)
-        # use information up to up_to second to build the image
-        episode, _ = cutOnce(poss, up_to)
-        x = episode2ts(episode)
+def transform_producer(up_to=1, crop_len=2):
+    '''
+    :param up_to: up to the last _ seconds
+    :param crop_len: crop _ seconds before the last second as the input data
+    :return: cropped raw data
+    '''
+
+
+    def transform_flat_data(poss):
+        # chop it up, turn each episode into raw data with length crop_len
+        episode, _ = cutOnce(poss, up_to, crop_len)
+        x = episode2flat(episode)
         y = poss.expected_outcome
         return x, y
 
-    return transform_ts_data
+    return transform_flat_data

@@ -19,7 +19,7 @@ class ImageExperiment(object):
         
     def run(self, args, train_data, val_data):
         if args.arch == 'MLP':
-            net = MODELS[args.arch]([94 * 50 * 11, 30, 1])
+            net = MODELS[args.arch]([args.input_dim, 30, 1])
 
             if args.arch == 'MLP':
                 savename = 'mlp.pth.tar'
@@ -83,7 +83,7 @@ class ExampleExperiment(ImageExperiment):
         # todo: shuffle data, increase number of worker
         dset = load_bball_data(savedir)
 
-        return DataLoader(dset, batch_size=args.batch_size)
+        return DataLoader(dset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
 class ImageShotEventExperiment(ImageExperiment):
 
@@ -134,7 +134,7 @@ class FlatInputExperiment(ImageExperiment):
     def get_data(self, args, path):
 
         traj_locations = get_traj_locations(path, criterion=shot_length_criterion)
-        transform_flat_data = transform_producer_flat(1)
+        transform_flat_data = transform_producer_flat(1, crop_len=args.trajlen)
         bball_dataset = BballDataset(traj_locations, transform=transform_flat_data)
         return bball_dataset
 
