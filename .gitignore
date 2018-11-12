@@ -1,6 +1,0 @@
-*.pyc
-*.pkl
-__pycache__
-bball_data
-models
-data
