@@ -104,7 +104,7 @@ class TimeSeriesExperiment(ImageExperiment):
 
     def wrap_dataset(self, dset, savedir, args):
         # save the data
-        save_bball_data(dset, savedir)
+        save_bball_data(dset, savedir, args.override_data)
 
         dset = load_bball_data(savedir)
 
@@ -145,7 +145,7 @@ class FlatInputExperiment(ImageExperiment):
 
     def wrap_dataset(self, dset, savedir, args):
         # save the data
-        save_bball_data(dset, savedir)
+        save_bball_data(dset, savedir, args.override_data)
 
         # return dataloader of the saved data
         dset = load_bball_data(savedir)
