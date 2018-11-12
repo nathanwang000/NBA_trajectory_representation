@@ -108,7 +108,7 @@ class Train(object):
 
         for x, y in self.val_data:
 
-            print(x, y)
+            # print(x, y)
             x, y = x.float(), y.float()            
             if self.use_gpu is not False:
                 x, y = x.cuda(), y.cuda()

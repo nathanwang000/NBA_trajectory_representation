@@ -9,18 +9,20 @@ import copy
 
 COURT = Court()
 
-def cutOnce(possession, second=1, crop_len=None):
+def cutOnce(possession, up_to=1, crop_len=None):
     # cut possession into two parts: 1:(n-second), (n-second+1):n
     frames_per_second = 25
-    episode_frames = int(frames_per_second * second)
+    episode_frames = int(frames_per_second * up_to)
     total_frames = len(possession.frames)
     
     first, second = copy.deepcopy(possession), copy.deepcopy(possession)
 
-    if total_frames <= episode_frames:
-        cutoff = 0
-    else:
-        cutoff = total_frames - episode_frames
+    # if total_frames <= episode_frames:
+    #     cutoff = 0
+    # else:
+    #     cutoff = total_frames - episode_frames
+
+    cutoff = -(up_to * frames_per_second)
         
     second.set(possession.frames[cutoff:])
     first.set(possession.frames[:cutoff])
