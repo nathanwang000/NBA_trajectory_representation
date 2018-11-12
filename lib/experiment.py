@@ -20,12 +20,11 @@ class ImageExperiment(object):
     def run(self, args, train_data, val_data):
         if args.arch == 'MLP':
             net = MODELS[args.arch]([args.input_dim, 30, 1])
-
-            if args.arch == 'MLP':
-                savename = 'mlp.pth.tar'
+            savename = 'mlp.pth.tar'
 
         elif args.arch == 'LSTM':
-            net = MODELS[archs.arch](22, args.hidden_size, args.num_layers, args.dropout, args.use_gpu)
+            net = MODELS[archs.arch](22, args.hidden_size,
+                                     args.num_layers, args.dropout, args.use_gpu)
             savename = 'lstm.pth.tar'
 
         savename = os.path.join(args.smdir, savename)
@@ -51,13 +50,13 @@ class ImageExperiment(object):
     def get_train_val_test(self, args):
 
         if args.debug:
-            train_path = '/data/bball/data2018/train_traj_debug/'
-            val_path = '/data/bball/data2018/val_traj_debug/'
-            test_path = '/data/bball/data2018/test_traj_debug/'
+            train_path = os.environ['BBALL2018_DEBUG_TRAIN']
+            val_path = os.environ['BBALL2018_DEBUG_VAL']
+            test_path = os.environ['BBALL2018_DEBUG_TEST']
         else:
-            train_path = '/data/bball/data2018/train_traj/'
-            val_path = '/data/bball/data2018/val_traj/'
-            test_path = '/data/bball/data2018/test_traj/'
+            train_path = os.environ['BBALL2018_TRAIN']
+            val_path = os.environ['BBALL2018_VAL']
+            test_path = os.environ['BBALL2018_TEST']
 
 
         train_set = self.get_data(args, train_path)
@@ -81,7 +80,6 @@ class ExampleExperiment(ImageExperiment):
         save_bball_data(dset, savedir)
 
         # return dataloader of the saved data
-        # todo: shuffle data, increase number of worker
         dset = load_bball_data(savedir)
 
         return DataLoader(dset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
@@ -146,7 +144,6 @@ class FlatInputExperiment(ImageExperiment):
         save_bball_data(dset, savedir)
 
         # return dataloader of the saved data
-        # todo: shuffle data, increase number of worker
         dset = load_bball_data(savedir)
 
         return DataLoader(dset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, drop_last=True)
