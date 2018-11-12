@@ -71,6 +71,7 @@ class ExampleExperiment(ImageExperiment):
     def get_data(self, args, path):
 
         traj_locations = get_traj_locations(path, criterion=shot_length_criterion)
+
         transform_image_data = transform_producer(1)
         bball_dataset = BballDataset(traj_locations, transform=transform_image_data)
         return bball_dataset
@@ -126,7 +127,7 @@ class TimeSeriesExperiment(ImageExperiment):
             lens = torch.LongTensor(lengths)
             return [data, target, lens]
 
-        return DataLoader(dset, batch_size = args.batch_size, collate_fn = my_collate, batch_first = True)
+        return DataLoader(dset, batch_size = args.batch_size, collate_fn = my_collate, batch_first = True, shuffle=True, num_workers=args.num_workers)
 
 
 class FlatInputExperiment(ImageExperiment):
@@ -134,6 +135,8 @@ class FlatInputExperiment(ImageExperiment):
     def get_data(self, args, path):
 
         traj_locations = get_traj_locations(path, criterion=shot_length_criterion)
+
+        print(path, len(traj_locations))
         transform_flat_data = transform_producer_flat(1, crop_len=args.trajlen)
         bball_dataset = BballDataset(traj_locations, transform=transform_flat_data)
         return bball_dataset
@@ -146,7 +149,7 @@ class FlatInputExperiment(ImageExperiment):
         # todo: shuffle data, increase number of worker
         dset = load_bball_data(savedir)
 
-        return DataLoader(dset, batch_size=args.batch_size)
+        return DataLoader(dset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, drop_last=True)
 
 
 SYNTHETIC_EXPERIMENTS['example'] = ExampleExperiment()

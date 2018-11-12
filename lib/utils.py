@@ -61,6 +61,7 @@ def get_traj_locations(data_dir, criterion=lambda fn: True):
     for fn in glob.glob(data_dir + "/*"):
         for poss_fn in glob.glob(fn + "/*"):
             # print(poss_fn)
+            # print(criterion(poss_fn))
             if criterion(poss_fn):
                 traj_locations.append(poss_fn)
     return traj_locations

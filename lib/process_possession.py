@@ -27,7 +27,14 @@ def cutOnce(possession, second=1, crop_len=None):
 
     if crop_len is not None:
         start_frame = cutoff - crop_len * frames_per_second
+
+        # some of the 3 sec trajs have less than 75 frames, so we need to check if the start_frame is less than 0, otherwise the seq will be empty
+        if start_frame < 0:
+            possession.set([possession.frames[0]] * (int(-start_frame)) + possession.frames)
+            start_frame = 0
+
         first.set(possession.frames[start_frame:cutoff])
+
 
     return first, second
     

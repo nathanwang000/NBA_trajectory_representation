@@ -20,7 +20,10 @@ class LoadedBballData(Dataset):
         file_index = math.floor(idx / self.meta_info['traj/file'])
         within_file_index = idx % self.meta_info['traj/file']
         xs, ys = joblib.load(os.path.join(self.data_path, '%d.pkl' % file_index))
+
+        # print(idx
         return xs[within_file_index], ys[within_file_index]
+
 
 def save_bball_data_helper_helper(dataset, indices, savename):
     # get dataset saved
