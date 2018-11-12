@@ -7,6 +7,34 @@ import warnings
 
 MODELS = {}
 
+class CNN(nn.Module):
+    def __init__(self):
+        super(CNN, self).__init__()
+
+        self.features = nn.Sequential( # input 11x94x50
+            nn.Conv2d(11, 32, kernel_size=3), # 92x48
+            nn.MaxPool2d(kernel_size=2), # 46x24
+            nn.ReLU(inplace=True),            
+            nn.Conv2d(32, 32, kernel_size=3), # 44x22
+            nn.MaxPool2d(kernel_size=2), # 22x11
+            nn.ReLU(inplace=True),
+            nn.Conv2d(32, 32, kernel_size=3), # 20x9
+            nn.MaxPool2d(kernel_size=2), # 10x4
+            nn.ReLU(inplace=True)
+        )
+
+        self.flatten = nn.Sequential(
+            nn.Linear(32 * 10 * 4, 400),
+            nn.ReLU(inplace=True),
+            nn.Linear(400, 1)
+        )
+        
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.shape[0], -1)
+        x = self.flatten(x)
+        return x
+
 class MLP(nn.Module):
 
     def __init__(self, neuron_sizes, activation=nn.LeakyReLU, bias=True): 
@@ -99,5 +127,6 @@ class LSTM(nn.Module):
 
 
 MODELS['MLP'] = MLP
+MODELS['CNN'] = CNN
 MODELS['LSTM'] = LSTM
 

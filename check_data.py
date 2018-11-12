@@ -51,6 +51,9 @@ def frames_players(poss):
 defect_possessions = []
 for game in tqdm.tqdm(glob.glob(args.dir + "/*")):
     for fn in glob.glob(game + "/*"):
+        if fn.split('/')[-1] == "Possession().pkl":
+            defect_possessions.append(fn)
+            continue
         poss = joblib.load(fn)
         # all frames has ball
         if not frames_have_ball(poss):

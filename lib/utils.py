@@ -10,6 +10,8 @@ class AverageMeter(object):
         self.val = 0
         self.avg = 0
         self.sum = 0
+        self.sum_2 = 0 # sum square
+        self.var = 0
         self.count = 0
     
     def update(self, val, n=1):
@@ -17,6 +19,8 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+        self.sum_2 += val**2 * n
+        self.var = self.sum_2 / self.count - self.avg**2
 
 class PrintTable(object):
     '''print tabular data in a nice format'''

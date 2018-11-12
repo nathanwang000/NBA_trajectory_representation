@@ -40,6 +40,7 @@ def save_bball_data_helper(dataset, indices, savedir, base_index, traj_per_file)
         save_bball_data_helper_helper(dataset, sub_indices, savename)
 
 def parallel_bball_data_helper(dataset, savedir, cpus=30, traj_per_file=10):
+    # todo: deal with invalid data after data transformation
     result_list = []
     pool = Pool(cpus)
 

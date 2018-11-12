@@ -87,12 +87,12 @@ class Train(object):
     def smooth_loss(self, step=None):
         if step is None:
             step = self.print_every
-        return smooth(self.all_losses, step=step)
+        return smooth(np.sqrt(self.all_losses), step=step)
 
     def smooth_valloss(self, step=None):
         if step is None:
             step = self.print_every
-        return smooth(self.val_losses, step=step)
+        return smooth(np.sqrt(self.val_losses), step=step)
     
     def train_step(self):
         raise NotImplementedError()

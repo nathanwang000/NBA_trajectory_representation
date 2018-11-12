@@ -23,24 +23,31 @@ class ImageExperiment(object):
             if args.arch == 'MLP':
                 savename = 'mlp.pth.tar'
         elif args.arch == 'LSTM':
-            net = MODELS[archs.arch](22, args.hidden_size, args.num_layers, args.dropout, args.use_gpu)
+            net = MODELS[args.arch](22, args.hidden_size,
+                                     args.num_layers, args.dropout, args.use_gpu)
             savename = 'lstm.pth.tar'
+        elif args.arch == 'CNN':
+            net = MODELS[args.arch]()
+            savename = 'cnn.pth.tar'
+            
         savename = os.path.join(args.smdir, savename)
         optimizer = torch.optim.Adam(net.parameters())
         criterion = nn.MSELoss()
 
-        if args.arch == 'MLP':
+        if args.arch in ('MLP', 'CNN'):
             trainer = TrainFeedForward(net, optimizer, criterion, train_data,
                                        save_filename=savename, val_data=val_data,
                                        use_gpu=args.use_gpu, n_iters=args.niters,
                                        n_save=args.n_save_model,
                                        batch_size=args.batch_size)
-        if args.arch == 'LSTM':
+
+        elif args.arch == 'LSTM':
             trainer = TrainLSTM(net, optimizer, criterion, train_data, 
                                 save_filename = savename, val_data = val_data, 
                                 use_gpu = args.use_gpu, n_iters = args.niters, 
                                 n_save = args.n_save_model, 
                                 batch_size = args.batch_size)
+
         if os.path.exists(savename):
             trainer.load_checkpoint(savename)
         trainer.train()
