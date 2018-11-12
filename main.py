@@ -100,7 +100,9 @@ train_data = experiment.wrap_dataset(train_set, savedir_tr, args)
 val_data = experiment.wrap_dataset(val_set, savedir_val, args)
 test_data = experiment.wrap_dataset(test_set, savedir_te, args)
 
-print(len(train_data), len(val_data), len(test_data))
+print('train length: {}, val length: {}, test length: {}'.format(len(train_data),
+                                                                 len(val_data),
+                                                                 len(test_data)))
 
 ######################################### run models ###################################
 experiment.run(args, train_data, val_data)
