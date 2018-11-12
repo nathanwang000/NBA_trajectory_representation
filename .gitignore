@@ -1,0 +1,10 @@
+*.pyc
+*.pkl
+__pycache__
+bball_data
+models
+data
+*/.ipynb_checkpoints
+*.pyc
+.ipynb_checkpoints
+stats

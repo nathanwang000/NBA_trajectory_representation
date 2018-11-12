@@ -105,7 +105,10 @@ class Train(object):
         print('==> evaluating validation loss')
         self.net.eval()
         loss_meter = AverageMeter()
+
         for x, y in self.val_data:
+
+            # print(x, y)
             x, y = x.float(), y.float()            
             if self.use_gpu is not False:
                 x, y = x.cuda(), y.cuda()
@@ -134,9 +137,10 @@ class Train(object):
 
         iter = self.start_iter
         while True:
-            if iter > self.n_iters: break
-                
+            if iter > self.n_iters or len(self.data) < self.batch_size: break
+            
             for x, y in self.data:
+
                 iter += 1
                 if iter > self.n_iters: break
 
