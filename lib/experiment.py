@@ -4,30 +4,27 @@ from lib.train import TrainFeedForward
 from lib.model import MODELS
 from torch.utils.data import DataLoader
 from lib.data import BballDataset, save_bball_data, load_bball_data
-from lib.utils import get_traj_locations, shot_only_criterion, shot_length_criterion
+from lib.utils import get_traj_locations, shot_only_criterion
 from lib.bball_transform.image_transform import transform_producer
 from lib.bball_transform.ts_transform import transform_producer as transform_producer_ts
-from lib.bball_transform.flat_transform import transform_producer as transform_producer_flat
 
 # exact setting for each experiment ran
 SYNTHETIC_EXPERIMENTS = {}
 
 class ImageExperiment(object):
 
-    def get_data(self, args, path):
+    def get_data(self, args):
         raise NotImplementedError()
         
     def run(self, args, train_data, val_data):
         if args.arch == 'MLP':
-            net = MODELS[args.arch]([args.input_dim, 30, 1])
+            net = MODELS[args.arch]([94 * 50 * 11, 30, 1])
 
             if args.arch == 'MLP':
                 savename = 'mlp.pth.tar'
-
         elif args.arch == 'LSTM':
             net = MODELS[archs.arch](22, args.hidden_size, args.num_layers, args.dropout, args.use_gpu)
             savename = 'lstm.pth.tar'
-
         savename = os.path.join(args.smdir, savename)
         optimizer = torch.optim.Adam(net.parameters())
         criterion = nn.MSELoss()
@@ -48,30 +45,14 @@ class ImageExperiment(object):
             trainer.load_checkpoint(savename)
         trainer.train()
 
-    def get_train_val_test(self, args):
-
-        if args.debug:
-            train_path = '/data/bball/data2018/train_traj_debug/'
-            val_path = '/data/bball/data2018/val_traj_debug/'
-            test_path = '/data/bball/data2018/test_traj_debug/'
-        else:
-            train_path = '/data/bball/data2018/train_traj/'
-            val_path = '/data/bball/data2018/val_traj/'
-            test_path = '/data/bball/data2018/test_traj/'
-
-
-        train_set = self.get_data(args, train_path)
-        val_set = self.get_data(args, val_path)
-        test_set = self.get_data(args, test_path)
-
-        return train_set, val_set, test_set
-
 class ExampleExperiment(ImageExperiment):
 
-    def get_data(self, args, path):
-
-        traj_locations = get_traj_locations(path, criterion=shot_length_criterion)
-
+    def get_data(self, args):
+        if args.debug:
+            path = '../debug_traj_data'
+        else:
+            path = '../traj_data'
+        traj_locations = get_traj_locations(path)
         transform_image_data = transform_producer(1)
         bball_dataset = BballDataset(traj_locations, transform=transform_image_data)
         return bball_dataset
@@ -84,18 +65,39 @@ class ExampleExperiment(ImageExperiment):
         # todo: shuffle data, increase number of worker
         dset = load_bball_data(savedir)
 
-        return DataLoader(dset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+        return DataLoader(dset, batch_size=args.batch_size)
 
 class ImageShotEventExperiment(ImageExperiment):
 
-    def get_data(self, args, path):
-        pass
+    def get_data(self, args):
+        if args.debug:
+            path = '../debug_traj_data'
+        else:
+            path = '../traj_data'
 
+        traj_locations = get_traj_locations(path, shot_only_criterion)
+        transform_image_data = transform_producer(1)
+        bball_dataset = BballDataset(traj_locations, transform=transform_image_data)
+        return bball_dataset
+
+    def wrap_dataset(self, dset, savedir, args):
+        # save the data
+        save_bball_data(dset, savedir)
+
+        # return dataloader of the saved data
+        # todo: shuffle data, increase number of worker
+        dset = load_bball_data(savedir)
+
+        return DataLoader(dset, batch_size=args.batch_size) 
+    
 class TimeSeriesExperiment(ImageExperiment):
 
-    def get_data(self, args, path):
-
-        traj_locations = get_traj_locations(path, criterion=shot_length_criterion)
+    def get_data(self, args):
+        if args.debug:
+            path = '../debug_traj_data'
+        else:
+            path = '../traj_data'
+        traj_locations = get_traj_locations(path)
         transform_ts_data = transform_producer_ts(1)
         bball_dataset = BballDataset(traj_locations, transform=transform_ts_data)
         return bball_dataset
@@ -127,32 +129,10 @@ class TimeSeriesExperiment(ImageExperiment):
             lens = torch.LongTensor(lengths)
             return [data, target, lens]
 
-        return DataLoader(dset, batch_size = args.batch_size, collate_fn = my_collate, batch_first = True, shuffle=True, num_workers=args.num_workers)
-
-
-class FlatInputExperiment(ImageExperiment):
-
-    def get_data(self, args, path):
-
-        traj_locations = get_traj_locations(path, criterion=shot_length_criterion)
-
-        print(path, len(traj_locations))
-        transform_flat_data = transform_producer_flat(1, crop_len=args.trajlen)
-        bball_dataset = BballDataset(traj_locations, transform=transform_flat_data)
-        return bball_dataset
-
-    def wrap_dataset(self, dset, savedir, args):
-        # save the data
-        save_bball_data(dset, savedir)
-
-        # return dataloader of the saved data
-        # todo: shuffle data, increase number of worker
-        dset = load_bball_data(savedir)
-
-        return DataLoader(dset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, drop_last=True)
+        return DataLoader(dset, batch_size = args.batch_size, collate_fn = my_collate, batch_first = True)
 
 
 SYNTHETIC_EXPERIMENTS['example'] = ExampleExperiment()
 SYNTHETIC_EXPERIMENTS['image_shot'] = ImageShotEventExperiment()
 SYNTHETIC_EXPERIMENTS['timeseries'] = TimeSeriesExperiment()
-SYNTHETIC_EXPERIMENTS['flatinput'] = FlatInputExperiment()
+

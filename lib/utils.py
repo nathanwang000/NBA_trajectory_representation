@@ -1,8 +1,6 @@
 import time, math, torch, shutil, glob
 import numpy as np
 
-import os
-
 class AverageMeter(object):
     """Computes and stores the average and current value"""
     def __init__(self):
@@ -57,11 +55,8 @@ def get_traj_locations(data_dir, criterion=lambda fn: True):
     '''return traj_locations given data_dir, assume data directory contains
     subdirectories containing individual possessions'''
     traj_locations = []
-
     for fn in glob.glob(data_dir + "/*"):
         for poss_fn in glob.glob(fn + "/*"):
-            # print(poss_fn)
-            # print(criterion(poss_fn))
             if criterion(poss_fn):
                 traj_locations.append(poss_fn)
     return traj_locations
@@ -70,23 +65,4 @@ def get_traj_locations(data_dir, criterion=lambda fn: True):
 def shot_only_criterion(fn):
     if fn.split(',')[-2].strip() in ('Field Goal Made', 'Field Goal Missed'):
         return True
-    return False
-
-def shot_length_criterion(fn, min_len=3, max_len=24):
-
-    '''
-
-    This criterion selects shot possessions with length >= 3secs and <= 24 secs
-
-    :param fn: trajectory filename
-    :param min_len: minimum number of frames
-    :param max_len: maximum number of frames
-    :return: True or False
-    '''
-
-    traj_len = eval(fn.split(',')[2]) # calculate trajectory length using wall clock time
-
-    if shot_only_criterion(fn) and traj_len >= min_len and traj_len <= max_len:
-        return True
-
     return False
