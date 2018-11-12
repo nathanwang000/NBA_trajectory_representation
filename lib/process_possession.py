@@ -17,12 +17,12 @@ def cutOnce(possession, up_to=1, crop_len=None):
     
     first, second = copy.deepcopy(possession), copy.deepcopy(possession)
 
-    # if total_frames <= episode_frames:
-    #     cutoff = 0
-    # else:
-    #     cutoff = total_frames - episode_frames
+    if total_frames <= episode_frames:
+        cutoff = 0
+    else:
+        cutoff = total_frames - episode_frames
 
-    cutoff = -(up_to * frames_per_second)
+    # cutoff = -(up_to * frames_per_second)
         
     second.set(possession.frames[cutoff:])
     first.set(possession.frames[:cutoff])
@@ -35,8 +35,10 @@ def cutOnce(possession, up_to=1, crop_len=None):
             possession.set([possession.frames[0]] * (int(-start_frame)) + possession.frames)
             start_frame = 0
 
-        first.set(possession.frames[start_frame:cutoff])
+            total_frames = len(possession.frames)
+            cutoff = total_frames - episode_frames
 
+        first.set(possession.frames[start_frame:cutoff])
 
     return first, second
     
