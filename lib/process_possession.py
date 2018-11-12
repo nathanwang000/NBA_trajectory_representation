@@ -9,21 +9,35 @@ import copy
 
 COURT = Court()
 
-def cutOnce(possession, second=1):
+def cutOnce(possession, up_to=1, crop_len=None):
     # cut possession into two parts: 1:(n-second), (n-second+1):n
     frames_per_second = 25
-    episode_frames = int(frames_per_second * second)
+    episode_frames = int(frames_per_second * up_to)
     total_frames = len(possession.frames)
     
     first, second = copy.deepcopy(possession), copy.deepcopy(possession)
 
-    if total_frames <= episode_frames:
-        cutoff = 0
-    else:
-        cutoff = total_frames - episode_frames
+    # if total_frames <= episode_frames:
+    #     cutoff = 0
+    # else:
+    #     cutoff = total_frames - episode_frames
+
+    cutoff = -(up_to * frames_per_second)
         
     second.set(possession.frames[cutoff:])
     first.set(possession.frames[:cutoff])
+
+    if crop_len is not None:
+        start_frame = cutoff - crop_len * frames_per_second
+
+        # some of the 3 sec trajs have less than 75 frames, so we need to check if the start_frame is less than 0, otherwise the seq will be empty
+        if start_frame < 0:
+            possession.set([possession.frames[0]] * (int(-start_frame)) + possession.frames)
+            start_frame = 0
+
+        first.set(possession.frames[start_frame:cutoff])
+
+
     return first, second
     
 def cutPoss(possession, second=1):
