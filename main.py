@@ -30,6 +30,10 @@ parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
 parser.add_argument('--use_gpu', action='store_true',
                     help='whether or not use gpu')
+parser.add_argument('--override_data', action='store_true',
+                    help='whether or not override existing data')
+parser.add_argument('--override_model', action='store_true',
+                    help='whether or not override existing model')
 parser.add_argument('--device', default=0, type=int, help='set the gpu id to use')
 parser.add_argument('--num_workers', default=1, type=int, help='number of workers to load data')
 
@@ -100,9 +104,9 @@ train_data = experiment.wrap_dataset(train_set, savedir_tr, args)
 val_data = experiment.wrap_dataset(val_set, savedir_val, args)
 test_data = experiment.wrap_dataset(test_set, savedir_te, args)
 
-print('train length: {}, val length: {}, test length: {}'.format(len(train_data),
-                                                                 len(val_data),
-                                                                 len(test_data)))
+print('train length: {}, val length: {}, test length: {}'.format(len(train_data.dataset),
+                                                                 len(val_data.dataset),
+                                                                 len(test_data.dataset)))
 
 ######################################### run models ###################################
 experiment.run(args, train_data, val_data)

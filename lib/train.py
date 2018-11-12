@@ -137,7 +137,7 @@ class Train(object):
 
         iter = self.start_iter
         while True:
-            if iter > self.n_iters or len(self.data) < self.batch_size: break
+            if iter > self.n_iters or len(self.data.dataset) < self.batch_size: break
             
             for x, y in self.data:
 

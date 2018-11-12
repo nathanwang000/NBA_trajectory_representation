@@ -48,7 +48,7 @@ class ImageExperiment(object):
                                 n_save = args.n_save_model, 
                                 batch_size = args.batch_size)
 
-        if os.path.exists(savename):
+        if os.path.exists(savename) and not args.override_model:
             trainer.load_checkpoint(savename)
         trainer.train()
 
@@ -62,7 +62,6 @@ class ImageExperiment(object):
             train_path = os.environ['BBALL2018_TRAIN']
             val_path = os.environ['BBALL2018_VAL']
             test_path = os.environ['BBALL2018_TEST']
-
 
         train_set = self.get_data(args, train_path)
         val_set = self.get_data(args, val_path)
@@ -82,7 +81,7 @@ class ExampleExperiment(ImageExperiment):
 
     def wrap_dataset(self, dset, savedir, args):
         # save the data
-        save_bball_data(dset, savedir)
+        save_bball_data(dset, savedir, args.override_data)
 
         # return dataloader of the saved data
         dset = load_bball_data(savedir)

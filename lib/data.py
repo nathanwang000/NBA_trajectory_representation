@@ -21,7 +21,6 @@ class LoadedBballData(Dataset):
         within_file_index = idx % self.meta_info['traj/file']
         xs, ys = joblib.load(os.path.join(self.data_path, '%d.pkl' % file_index))
 
-        # print(idx
         return xs[within_file_index], ys[within_file_index]
 
 
