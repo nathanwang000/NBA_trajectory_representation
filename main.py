@@ -60,10 +60,10 @@ parser.add_argument('--debug', action='store_true',
 # flat input settings
 parser.add_argument('--trajlen', default=2, type=int, help='the length of trajtories to use as the flat input')
 
-
 args = parser.parse_args()
 
-torch.cuda.set_device(args.device)
+if args.use_gpu:
+    torch.cuda.set_device(args.device)
 
 if args.exp == 'flatinput':
     args.input_dim = args.trajlen * 25 * 23
