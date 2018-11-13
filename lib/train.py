@@ -114,7 +114,8 @@ class Train(object):
                 x, y = x.cuda(), y.cuda()
 
             output = self.net(x)
-            loss = self.criterion(output.view(-1), y.view(-1)) # regression loss
+            # regression loss
+            loss = self.criterion(output.view(-1), y.view(-1)).detach().numpy()
             loss_meter.update(loss)
 
         print('==> validation loss is %.3f' % loss_meter.avg)
