@@ -9,3 +9,5 @@ data
 .ipynb_checkpoints
 stats
 notebooks
+*.ipynb
+*.sh
