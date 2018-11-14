@@ -84,7 +84,7 @@ class ExampleExperiment(ImageExperiment):
         save_bball_data(dset, savedir, args.override_data)
 
         # return dataloader of the saved data
-        dset = load_bball_data(savedir)
+        dset = load_bball_data(savedir, args.target)
 
         return DataLoader(dset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
@@ -106,7 +106,7 @@ class TimeSeriesExperiment(ImageExperiment):
         # save the data
         save_bball_data(dset, savedir, args.override_data)
 
-        dset = load_bball_data(savedir)
+        dset = load_bball_data(savedir, args.target)
 
         #Deal with uneven lengths breaking DataLoader
         def pad_data(x):
@@ -148,7 +148,7 @@ class FlatInputExperiment(ImageExperiment):
         save_bball_data(dset, savedir, args.override_data)
 
         # return dataloader of the saved data
-        dset = load_bball_data(savedir)
+        dset = load_bball_data(savedir, args.target)
 
         return DataLoader(dset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, drop_last=True)
 

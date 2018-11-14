@@ -81,7 +81,7 @@ def transform_producer(up_to=1):
         # use information up to up_to second to build the image
         episode, _ = cutOnce(poss, up_to)
         x = episode2image(episode)
-        y = poss.expected_outcome
-        return x, y
+        p = poss.points
+        return x, y, p
     
     return transform_image_data
