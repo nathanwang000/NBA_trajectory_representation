@@ -18,6 +18,7 @@ from lib.experiment import SYNTHETIC_EXPERIMENTS
 
 model_names = MODELS.keys()
 exp_names = SYNTHETIC_EXPERIMENTS.keys()
+targets = {'points', 'expected'}
 
 # parse arguments
 parser = argparse.ArgumentParser(description='bball 2018: trajectory representation')
@@ -26,6 +27,7 @@ parser.add_argument('--arch', '-a', metavar='ARCH', default='MLP',
                     help='model architecture: ' +
                     ' | '.join(model_names) +
                     ' (default: MLP)')
+parser.add_argument('--target', default='points', choices=targets, help='points: the real outcome, expected: the expected outcome')
 parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
 parser.add_argument('--use_gpu', action='store_true',

@@ -99,6 +99,7 @@ def transform_producer(up_to=1, crop_len=2):
         episode, _ = cutOnce(poss, up_to, crop_len)
         x = episode2flat(episode)
         y = poss.expected_outcome
-        return x, y
+        p = poss.points
+        return x, y, p
 
     return transform_flat_data

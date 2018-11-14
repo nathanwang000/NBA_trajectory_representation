@@ -9,9 +9,10 @@ from torch.utils.data import Dataset
 
 class LoadedBballData(Dataset):
 
-    def __init__(self, data_path):
+    def __init__(self, data_path, target):
         self.meta_info = joblib.load(os.path.join(data_path, 'meta.pkl'))
         self.data_path = data_path
+        self.target = target
 
     def __len__(self):
         return self.meta_info['len']
@@ -19,20 +20,26 @@ class LoadedBballData(Dataset):
     def __getitem__(self, idx):
         file_index = math.floor(idx / self.meta_info['traj/file'])
         within_file_index = idx % self.meta_info['traj/file']
-        xs, ys = joblib.load(os.path.join(self.data_path, '%d.pkl' % file_index))
+        xs, ys, ps = joblib.load(os.path.join(self.data_path, '%d.pkl' % file_index))
 
-        return xs[within_file_index], ys[within_file_index]
-
+        if self.target == 'expected':
+            return xs[within_file_index], ys[within_file_index]
+        elif self.target == 'points':
+            return xs[within_file_index], ps[within_file_index]
+        else:
+            raise ValueError('Target has to be either expected or points!')
 
 def save_bball_data_helper_helper(dataset, indices, savename):
     # get dataset saved
     xs = []
     ys = []
+    ps = []
     for i in indices:
-        x, y = dataset[i]
+        x, y, p = dataset[i]
         xs.append(x)
         ys.append(y)
-    joblib.dump((xs, ys), savename)
+        ps.append(p)
+    joblib.dump((xs, ys, ps), savename)
     
 def save_bball_data_helper(dataset, indices, savedir, base_index, traj_per_file):
     nchunks = math.ceil(len(indices) / traj_per_file)
@@ -101,9 +108,9 @@ def save_bball_data(dataset, savedir, override_existing=False):
         parallel_bball_data_helper(dataset, savedir)
         print("==>save data done")
 
-def load_bball_data(load_path):
+def load_bball_data(load_path, target):
     print('==>load data %s' % load_path)
-    dset = LoadedBballData(load_path)
+    dset = LoadedBballData(load_path, target)
     print('==>load data of size %d done' % len(dset))
     return dset
     

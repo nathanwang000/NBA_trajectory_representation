@@ -67,6 +67,7 @@ def transform_producer(up_to=1):
         episode, _ = cutOnce(poss, up_to)
         x = episode2ts(episode)
         y = poss.expected_outcome
-        return x, y
+        p = poss.points
+        return x, y, p
     
     return transform_ts_data

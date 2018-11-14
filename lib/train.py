@@ -115,8 +115,10 @@ class Train(object):
 
             output = self.net(x)
             # regression loss
-            loss = self.criterion(output.view(-1), y.view(-1)).detach().numpy()
-            loss_meter.update(loss)
+            loss = self.criterion(output.view(-1), y.view(-1)).detach()
+            if self.use_gpu:
+                loss = loss.cpu()
+            loss_meter.update(loss.numpy())
 
         print('==> validation loss is %.3f' % loss_meter.avg)
         self.scheduler.step(loss_meter.avg)
