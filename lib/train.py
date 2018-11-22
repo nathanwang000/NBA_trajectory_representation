@@ -188,7 +188,7 @@ class Train(object):
                             is_best = True
                         else:
                             is_best = self.best_loss > val_loss                        
-                            self.best_loss = max(val_loss, self.best_loss)
+                            self.best_loss = min(val_loss, self.best_loss)
 
                     self.save_checkpoint({
                         'niter': iter + 1,
