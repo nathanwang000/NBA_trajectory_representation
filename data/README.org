@@ -1,0 +1,82 @@
+This document serves as a documentation for files contained in data/
+
+For example use case, see save_non_traj_info in [[https://gitlab.eecs.umich.edu/jiaxuan/bball2017/blob/master/lib/training/dataset.py][bball2017 project]]. 
+
+* player dict csv
+
+This document was obtained from Jenna Wiens in 2017. It provides a way to look
+up a player by player id (global player id). It contains 476 players'
+information, including weight, height, draft pick, and etc. Example code using
+this file:
+
+#+BEGIN_SRC python
+import pandas as pd
+working_dir = os.getcwd()
+player_info = pd.read_csv("{}/data/player_dict.csv".format(working_dir))
+
+def gid2name(gid):
+    p = player_info[player_info.player_global_id==gid]
+    if p.values.size == 0: return str(gid)
+    fn = p.player_firstname.values[0]
+    ln = p.player_lastname.values[0]
+    return " ".join([fn, ln])
+    
+def gid2weight(gid):
+    # reference:
+    # https://www.psychguides.com/interact/male-body-image-and-the-average-athlete/
+    p = player_info[player_info.player_global_id==gid]
+    if p.values.size == 0: return 222
+    return int(p.player_weight.values[0])
+
+def gid2height(gid):
+    p = player_info[player_info.player_global_id==gid]
+    if p.values.size == 0: return 79 # 6'7
+    return int(p.player_height.values[0])
+
+#+END_SRC
+
+* player info pkl
+
+This document contains player id for 662 players, covering all players appeared
+in bball2018 project. The file is a dictionary mapping player id to a local id
+(from an arbitrary id to an id in range 0 to 611). It is useful for building one
+hot embedding using player id.
+
+* positions pkl
+
+This file contains player positions for bball2017 and bball2018 project. The
+file is a dictionary of dictionary, mapping player id and game to the player's
+position. For example, 
+
+#+BEGIN_SRC python
+from sklearn.externals import joblib
+
+pos = joblib.load('data/positions.pkl')
+print(pos[892930][2017041219]) # output: ['PF']
+#+END_SRC
+
+means a player with id 892939 in game 2017041219 is playing power forward.
+Possible positions includes ['C', 'F/C', 'PF', 'F', 'SF', 'G/F', 'SG', 'G',
+'PG'].  where 'F/C' is recorded as ['F', 'C'] in the value of the dictionary
+indicating the player plays either forward or center in that game. There are
+missing data, you should denote missing positions as ['UN'] as a convention.
+
+* percentage pkl
+
+The file is generated from [[https://gitlab.eecs.umich.edu/jiaxuan/bball2017/blob/master/lib/raw_processing/player_percentage.py][here]].
+
+It essentially pulled out shot information from the raw data. It is to my
+understanding that shots missed due to foul does not count as a shot event. 
+
+The file contains a dictionary of dictionary of the form:
+d[pid][gamecode][region] = (#missed, #made) for all games before and including
+the game identified by gamecode. The idea is never use future data (future game
+performance) to bias current prediction. Regions are defined in legacy/court.py
+(19 regions).
+
+* average percentage pkl
+
+This file is a aggregation of percentage pkl. It is of the form:
+d[position][region] = percentage, where position is player position in the set
+['F', 'SG', 'G', 'PF', 'SF', 'G/F', 'F/C', 'PG', 'C'].
+
